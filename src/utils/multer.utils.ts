@@ -1,29 +1,11 @@
-import multer from 'multer';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage, Options } from 'multer-storage-cloudinary';
+import multer, { diskStorage } from 'multer';
 
-const profilePicStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/profile-pics/');
-    },
-    filename: (req, file, cb) => {
-        const filename = `profile-pic-${Date.now()}${path.extname(file.originalname)}`;
-        cb(null, filename);
-    },
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    api_key: process.env.CLOUDINARY_API_KEY!,
+    api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-const profilePicUpload = multer({
-    storage: profilePicStorage,
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png/;
-        const ext = path.extname(file.originalname).toLowerCase();
-        const mimeType = allowedTypes.test(file.mimetype);
-
-        if (mimeType && allowedTypes.test(ext)) {
-            return cb(null, true);
-        }
-        cb(new Error('Only image files are allowed.'));
-    },
-    limits: { fileSize: 1024 * 1024 * 5 } 
-});
-
-export { profilePicUpload };
+export default cloudinary ;

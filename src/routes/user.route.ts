@@ -14,7 +14,6 @@ import {
     addRole, 
     addSkills 
 } from '../controllers/user.controller';
-import {profilePicUpload} from '../utils/multer.utils';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 const  router = Router();
@@ -28,7 +27,7 @@ router.get('/confirm_email/:token', confirmEmail);
 
 router.get('/profile', getUserProfileController);
 router.put('/profile', updateUserProfileController);
-router.post('/profile/upload',profilePicUpload.single('file'),uploadProfilePic);
+router.post('/profile/upload', uploadProfilePic);
 
 router.get('/add_role', addRole);
 router.get('/add_skills', addSkills);

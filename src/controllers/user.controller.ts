@@ -5,8 +5,7 @@ import bcrypt from 'bcrypt';
 import { generateEmailToken, verifyEmailToken, sendEmail } from '../utils/email.utils';
 import { createUserSchema } from '../schemas/user.schema';
 import { generateToken, generateRefreshToken, verifyToken } from '../utils/jwt.utils';
-import { profile } from 'console';
-
+import cloudnary from '../utils/multer.utils';
 
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try{
@@ -155,15 +154,13 @@ export const uploadProfilePic = async (req: Request, res: Response, next: NextFu
         const userId = req.body.user._id;
         const user = await getUser(userId);
         if(user){
-            if (req.file && req.file.path) {
-                user.profilePic = req.file.path;
-            } else {
-                throw new Error('File not uploaded');
+            if (!req.file) {
+                throw new Error('File not provided');
             }
+            const result = await cloudnary.uploader.upload(req.file.path);
+            user.profilePic = result.secure_url;
             await user.save();
-            res.status(200).json({message:'Profile picture uploaded successfully'});
-        }else{
-            throw new Error('User not found');
+            res.status(200).json({profilePic:user.profilePic});
         }
     }catch(err:any){
         next(err);
