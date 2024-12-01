@@ -30,17 +30,19 @@ export const createUserController = async (req: Request, res: Response, next: Ne
 
 export const confirmEmail = async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const emailToken = req.params.token;
-        const email = verifyEmailToken(emailToken);
-        if(typeof email !== 'string'){
-            throw new Error('Invalid token');
-        }
+        const email = req.query.email as string;
+        const token = req.query.token as string;
         const user = await getUserByEmail(email);
         if(user){
-            user.isEmailVerified = true;
-            user.emailToken = '';
-            await user.save();
-            res.status(200).json({message:'Email verified successfully'});
+            const isValid = verifyEmailToken(email, token);
+            if(await isValid){
+                user.isEmailVerified = true;
+                user.emailToken = '';
+                await user.save();
+                res.status(200).json({message:'Email verified successfully'});
+            }else{
+                throw new Error('Invalid token');
+            }
         }else{
             throw new Error('User not found');
         }

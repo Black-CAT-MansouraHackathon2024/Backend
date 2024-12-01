@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { getUserByEmail } from '../services/user.services';
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -28,6 +29,25 @@ export const generateEmailToken = (userId: string) => {
     return hash.substring(0, 8);
 }
 
-export const verifyEmailToken = (token: string) => {
-   
+export const verifyEmailToken = async (email: string, token: string) => {
+    try {
+        const user = await getUserByEmail(email);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(token)  
+            .digest('hex'); 
+
+        if (user.emailToken === hashedToken) {
+            return true; 
+        } else {
+            return false;
+        }
+    } catch (err: any) {
+        console.error(err);
+        return false;
+    }
 };
