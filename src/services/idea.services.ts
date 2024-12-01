@@ -1,3 +1,4 @@
+import { Query } from 'mongoose';
 import IIDEA from '../models/idea.model';
 import Idea from '../models/idea.model';
 import { ideaType } from '../schemas/idea.schema';
@@ -73,14 +74,38 @@ export const deleteIdea = async (id: string) => {
     }
 }
 
-export const getAllIdeas = async () => {
+export const getIdeas = async (query: any) => {
     try {
-        const ideas = await Idea.find();
+        const filterQuery: any = {};
+
+        if (query.title) {
+            filterQuery.title = new RegExp(query.title, 'i');
+        }
+        if (query.description) {
+            filterQuery.description = new RegExp(query.description, 'i');
+        }
+        if (query.category) {
+            filterQuery.category = query.category;
+        }
+        if (query.status) {
+            filterQuery.status = query.status;
+        }
+
+
+        const page = parseInt(query.page as string) || 1; 
+        const limit = parseInt(query.limit as string) || 10; 
+        const skip = (page - 1) * limit;
+
+        const ideas = await Idea.find(filterQuery)
+            .skip(skip)
+            .limit(limit);
+
         return ideas;
     } catch (err: any) {
         throw new Error(err);
     }
-}
+};
+
 
 export const getIdeasByCategory = async (category: string) => {
     try {
@@ -112,4 +137,16 @@ export const getIdeasByCreator = async (creatorId: string) => {
     }
 }
 
+export const getUserIdea = async (ideaId: string) => {
+    try {
+        const idea = await Idea.findById(ideaId);
+        if (!idea) {
+            throw new Error('Idea not found');
+        }
+        return idea.creatorId;
+    }
+    catch (err: any) {
+        throw new Error(err);
+    }
+}
 

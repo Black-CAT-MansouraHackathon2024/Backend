@@ -4,23 +4,24 @@ import { getUser } from '../services/user.services';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const accessToken = req.headers.authorization?.split(' ')[1];
-        if (!accessToken) {
-            return res.status(401).send({ message: 'Access token not found' });
+        const authorization = req.headers.authorization?.split(' ');
+        if (!authorization || authorization[0] !== 'Bearer' || !
+            authorization[1]) {
+            throw new Error('UNAUTHORIZED');
         }
-        const decoded = verifyToken(accessToken) as {
-            [x: string]: any; userId: string
-        };
-        const userId: string = decoded.user.id as string;
-        const user = await getUser(userId);
-        console.log(user);
-        if (!user) {
-            return res.status(401).send({ message: 'User not found' });
+        const token = authorization[1];
+        const decoded = verifyToken(token);
+        let user;
+        if (typeof decoded !== 'string' && 'id' in decoded) {
+            user = await getUser(decoded.id);
+        } else {
+          throw new Error('UNAUTHORIZED');
         }
-        req.body.user = user
+         
+        req.body.user = user;
         next();
     }
-    catch (err) {
-        next(err);
+    catch (error:any) {
+       next(error);
     }
 };

@@ -25,14 +25,14 @@ router.post('/refresh_token', refreshTokenController);
 router.post('/forgot_password', forgotPasswordController);
 router.get('/confirm_email/:token', confirmEmail);
 
-router.get('/profile', getUserProfileController);
-router.put('/profile', updateUserProfileController);
-router.post('/profile/upload', uploadProfilePic);
+router.get('/profile', authMiddleware, getUserProfileController);
+router.put('/profile', authMiddleware, updateUserProfileController);
+router.put('/profile/upload', authMiddleware, uploadProfilePic);
 
-router.get('/add_role', addRole);
-router.get('/add_skills', addSkills);
+router.get('/:id', authMiddleware, getUserController);
+router.put('/:id', authMiddleware, updateUserController);
 
-router.get('/', getUserController);
-router.put('/', updateUserController);
+router.post('/role', authMiddleware, addRole);
+router.post('/skills', authMiddleware, addSkills);
 
 export default router;

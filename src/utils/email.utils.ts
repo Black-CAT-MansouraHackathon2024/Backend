@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -21,13 +22,12 @@ export const sendEmail = async (email: string, subject: string, text: string) =>
 };
 
 export const generateEmailToken = (userId: string) => {
-    return jwt.sign({ userId }, process.env.EMAIL_SECRET!, { expiresIn: '1d' });
+    const token =jwt.sign({ userId }, process.env.EMAIL_SECRET!, { expiresIn: '1d' });
+    const hash = crypto.createHash('sha256').update(token).digest('hex');
+
+    return hash.substring(0, 8);
 }
 
 export const verifyEmailToken = (token: string) => {
-    try {
-        return jwt.verify(token, process.env.EMAIL_SECRET!);
-    } catch (error) {
-        throw new Error('Invalid or expired token');
-    }
+   
 };

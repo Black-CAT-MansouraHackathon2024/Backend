@@ -6,6 +6,7 @@ import { generateEmailToken, verifyEmailToken, sendEmail } from '../utils/email.
 import { createUserSchema } from '../schemas/user.schema';
 import { generateToken, generateRefreshToken, verifyToken } from '../utils/jwt.utils';
 import cloudnary from '../utils/multer.utils';
+import { custom } from 'zod';
 
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try{
@@ -76,7 +77,11 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 
 export const getUserController = async (req: Request, res: Response, next: NextFunction) => {
     try{
+        const authUser = req.body.user;
         const userId = req.params.id;
+        if(authUser._id !== userId){
+            next(new Error('Unauthorized'));
+        }
         const user = await getUser(userId);
         res.status(200).json(user);
     }catch(err:any){
@@ -88,6 +93,10 @@ export const getUserController = async (req: Request, res: Response, next: NextF
 export const updateUserController = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const userId = req.params.id;
+        const authUser = req.body.user;
+        if(authUser._id !== userId){
+            next(new Error('Unauthorized'));
+        }
         const userDetails = req.body;
         const user = await updateUser(userId, userDetails);
         res.status(200).json(user);
@@ -111,6 +120,10 @@ export const getUserProfileController = async (req: Request, res: Response, next
 export const updateUserProfileController = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const userId = req.body.user._id;
+        const authUser = req.body.user;
+        if(authUser._id !== userId){
+            next(new Error('Unauthorized'));
+        }
         const userDetails = req.body;
         const user = await updateUser(userId, userDetails);
         res.status(200).json(user);
@@ -188,6 +201,10 @@ export const forgotPasswordController = async (req: Request, res: Response, next
 export const addRole = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const userId = req.params.id;
+        const authUser = req.body.user;
+        if(authUser._id !== userId){
+            next(new Error('Unauthorized'));
+        }
         const role = req.body.role;
         const user = await getUser(userId);
         if(user){
@@ -195,16 +212,21 @@ export const addRole = async (req: Request, res: Response, next: NextFunction) =
             await user.save();
             res.status(200).json({message:'Role added successfully'});
         }else{
-            throw new Error('User not found');
+            next(new Error('User not found'));
         }
-    }catch(err:any){
+    }
+    catch(err:any){
         next(err);
     }
 };
 
 export const addSkills = async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userId = req.params.id;
+      const userId = req.params.id;
+      const authUser = req.body.user;
+      if(authUser._id!==userId){
+       next(new Error('Unauthorized'));
+      }
         const skills = req.body.skills;
         const user = await getUser(userId);
         if(user){
@@ -212,8 +234,9 @@ export const addSkills = async (req: Request, res: Response, next: NextFunction)
             await user.save();
             res.status(200).json({message:'Skills added successfully'});
         }else{
-            throw new Error('User not found');
+            next(new Error('User not found'));
         }
+        
     }catch(err:any){
         next(err);
     }

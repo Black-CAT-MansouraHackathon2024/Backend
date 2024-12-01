@@ -1,13 +1,14 @@
 import {Router} from 'express';
 import * as ideaController from '../controllers/idea.controller';
+import {authMiddleware} from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/create', ideaController.createIdea);
-router.get('/get', ideaController.getIdeas);
-router.get('/get/:id', ideaController.getIdea);
-router.put('/update/:id', ideaController.updateIdea);
-router.delete('/delete/:id', ideaController.deleteIdea);
+router.post('/create', authMiddleware,ideaController.createIdea);
+router.get('/get',authMiddleware, ideaController.getIdeas);
+router.get('/get/:id',authMiddleware, ideaController.getIdea);
+router.put('/update/:id',authMiddleware, ideaController.updateIdea);
+router.delete('/delete/:id',authMiddleware, ideaController.deleteIdea);
 
 export default router;
 
