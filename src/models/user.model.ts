@@ -13,6 +13,7 @@ export interface IUser extends mongoose.Document {
     skills: string[];
     isEmailVerified: boolean;
     refreshToken: string;
+    emailToken?: string;
 }
 
 const userSchema = new mongoose.Schema({
@@ -28,6 +29,7 @@ const userSchema = new mongoose.Schema({
     skills: { type: [String], default: [] },
     isEmailVerified: { type: Boolean, default: false },
     refreshToken: { type: String, default: '' },
+    emailToken: { type: String }
 }, { timestamps: true });
 
 const User = mongoose.model<IUser>('User', userSchema);

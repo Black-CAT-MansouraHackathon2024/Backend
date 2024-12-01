@@ -11,7 +11,8 @@ export const createUserSchema = z.object({
     bio: z.string().default(''),
     skills: z.array(z.string()).default([]),
     isEmailVerified: z.boolean().default(false),
-    refreshToken: z.string().default('')
+    refreshToken: z.string().default(''),
+    emailToken: z.string().optional(),
 });
 
 export type userType = z.infer<typeof createUserSchema>;

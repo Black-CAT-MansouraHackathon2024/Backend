@@ -4,6 +4,10 @@ import { IUser } from "../models/user.model";
 import bcrypt from 'bcrypt';
 import { generateToken, generateRefreshToken, verifyToken } from "../utils/jwt.utils";
 import { get } from "http";
+import { generateEmailToken } from "../utils/email.utils";
+import { sendEmail } from "../utils/email.utils";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const createUser = async (userDetails: userType) => {
     try{
@@ -28,8 +32,15 @@ export const createUser = async (userDetails: userType) => {
         const newUser = await user.save();
         const userId: string = (newUser._id as string).toString();
         const refreshToken = generateRefreshToken(userId);
+        const emailToken = generateEmailToken(userDetails.email);
+        newUser.emailToken = emailToken;
         newUser.refreshToken = refreshToken;
         await newUser.save();
+
+        const verificationLink = `${process.env.BASE_URL}/confirm_email?email=${newUser.email}&token=${emailToken}`;
+        const emailText = `Click on the link to verify your email: ${verificationLink}`;
+        await sendEmail(newUser.email, 'Email Verification', emailText);
+
         return newUser;   
     }
     catch(err: any){

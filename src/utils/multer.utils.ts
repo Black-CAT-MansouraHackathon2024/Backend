@@ -11,15 +11,6 @@ const profilePicStorage = multer.diskStorage({
     },
 });
 
-const resumeStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/resumes/');
-    },
-    filename: (req, file, cb) => {
-        const filename = `resume-${Date.now()}${path.extname(file.originalname)}`;
-        cb(null, filename);
-    },
-});
 const profilePicUpload = multer({
     storage: profilePicStorage,
     fileFilter: (req, file, cb) => {
@@ -34,3 +25,5 @@ const profilePicUpload = multer({
     },
     limits: { fileSize: 1024 * 1024 * 5 } 
 });
+
+export { profilePicUpload };
