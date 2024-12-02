@@ -13,6 +13,8 @@ export const createUserSchema = z.object({
     isEmailVerified: z.boolean().default(false),
     refreshToken: z.string().default(''),
     emailToken: z.string().optional(),
+    emailOtp: z.string().optional(),
+    emailOtpExpiry: z.date().optional(),
 });
 
 export type userType = z.infer<typeof createUserSchema>;

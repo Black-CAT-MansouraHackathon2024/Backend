@@ -29,6 +29,32 @@ export const generateEmailToken = (userId: string) => {
     return hash.substring(0, 8);
 }
 
+export const generateOtp = (): { otp: string; hashedOtp: string } => {
+    const otp = Math.floor(10000000 + Math.random() * 90000000).toString(); 
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+    return { otp, hashedOtp };
+};
+
+export const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
+    try {
+        const user = await getUserByEmail(email);
+        if (!user || !user.emailOtp || !user.emailOtpExpiry) {
+            throw new Error('User not found or OTP missing');
+        }
+
+        if (user.emailOtpExpiry < new Date()) {
+            throw new Error('OTP expired');
+        }
+
+        const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+        return hashedOtp === user.emailOtp;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
+
 export const verifyEmailToken = async (email: string, token: string) => {
     try {
         const user = await getUserByEmail(email);

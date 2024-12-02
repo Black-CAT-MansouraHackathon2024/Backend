@@ -41,7 +41,8 @@ export const createUser = async (userDetails: userType) => {
         const emailText = `Click on the link to verify your email: ${verificationLink}`;
         await sendEmail(newUser.email, 'Email Verification', emailText);
 
-        return newUser;   
+        const token = generateToken(userId);
+        return { token, refreshToken ,user: newUser._id }; 
     }
     catch(err: any){
         throw new Error(err);
