@@ -9,8 +9,8 @@ export const createPrototypeController = async (req: Request, res: Response, nex
     try {
         const prototype = req.body as prototypeType;
         const user = req.body.user;
-        const userIdea= getUserIdea(prototype.ideaId);
-        if(userIdea !==user._id){
+        const userIdea= await getUserIdea(prototype.ideaId);
+        if(userIdea.toString() !==user._id.toString()){
             throw new Error('Unauthorized');
         }
         const result = await createPrototypeSchema.parse(prototype);
