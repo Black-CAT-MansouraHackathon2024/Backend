@@ -6,8 +6,8 @@ export const ideaSchema = z.object({
     category: z.enum(['Technology', 'Agriculture', 'Health', 'Industry', 'Economy', 'Community Service', 'Education', 'Energy']),
     status: z.enum(['draft', 'submitted', 'funded']),
     resourcesRequired: z.array(z.string()),
-    craetedAt: z.date(),
-    updatedAt: z.date(),
+    craetedAt: z.date().optional(),
+    updatedAt: z.date().optional(),
     creatorId: z.string(),
 });
 

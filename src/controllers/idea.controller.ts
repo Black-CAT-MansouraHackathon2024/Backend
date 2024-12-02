@@ -43,8 +43,10 @@ export const addResources = async (req: Request, res: Response, next: NextFuncti
 export const updateIdea = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = req.body.user;
-        const userIdea= getUserIdea(req.params.id);
-        if(userIdea !==user._id){
+        const userIdea=await  getUserIdea(req.params.id);
+        console.log(userIdea);
+        console.log(user._id);
+        if(userIdea.toString() !==user._id.toString()){
             throw new Error('Unauthorized');
         }
 
@@ -63,8 +65,10 @@ export const updateIdea = async (req: Request, res: Response, next: NextFunction
 export const deleteIdea = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = req.body.user;
-        const userIdea= getUserIdea(req.params.id);
-        if(userIdea !==user._id){
+        const userIdea= await getUserIdea(req.params.id);
+        console.log(user);
+        console.log(userIdea);
+        if(userIdea.toString() !==user._id.toString()){
             throw new Error('Unauthorized');
         }
         const idea = await ideaServices.deleteIdea(req.params.id);
