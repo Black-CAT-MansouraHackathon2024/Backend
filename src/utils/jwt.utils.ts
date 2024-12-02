@@ -1,19 +1,24 @@
+import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 dotenv.config();
 import config from "config";
-import jwt from 'jsonwebtoken';
 
-const privateKey = config.get<string>("privateKey");
-const publicKey = config.get<string>("publicKey");
+const publicKey :string= config.get("publicKey");
+const privateKey : string= config.get("privateKey");
 
-export const generateToken = (payload: any) => {
-    return jwt.sign(payload, privateKey, {expiresIn: '1h'});
+export const generateToken=(userId: string)=>
+{  return jwt.sign({ user: { id: userId } }, privateKey, { algorithm: 'RS256', expiresIn: process.env.ACCESS_KEY_TTL});
 }
 
-export const verifyToken = (token: string) => {
-    return jwt.verify(token, publicKey, {algorithms: ['RS256']});
+export const generateRefreshToken=(userId: string)=>{
+    return jwt.sign({ user: { id: userId } }, privateKey, { algorithm: 'RS256', expiresIn: process.env.REFRESH_KEY_TTL});
 }
 
-export const generateRefreshToken = (payload: any) => {
-    return jwt.sign(payload, privateKey, {expiresIn: '7d'});
+export const verifyToken=(token: string)=>{
+    try{
+    return jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+    }
+    catch(error){
+        throw new Error('Invalid token');
+    }
 }

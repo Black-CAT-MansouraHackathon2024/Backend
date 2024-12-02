@@ -2,6 +2,8 @@ import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { getUserByEmail } from '../services/user.services';
+import dptenv from 'dotenv';
+dptenv.config();
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -23,12 +25,12 @@ export const sendEmail = async (email: string, subject: string, text: string) =>
 };
 
 export const generateEmailToken = (userId: string) => {
-    const token =jwt.sign({ userId }, process.env.EMAIL_SECRET!, { expiresIn: '1d' });
-    const hash = crypto.createHash('sha256').update(token).digest('hex');
+    return jwt.sign({ userId }, process.env.EMAIL_SECRET!, { expiresIn: '1d' });
+};
 
-    return hash.substring(0, 8);
-}
-
+export const verifyEmailToken = (token: string) => {
+    return jwt.verify(token, process.env.EMAIL_SECRET!, { algorithms: ['RS256'] });
+};
 export const generateOtp = (): { otp: string; hashedOtp: string } => {
     const otp = Math.floor(10000000 + Math.random() * 90000000).toString(); 
     const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
@@ -55,25 +57,4 @@ export const verifyOtp = async (email: string, otp: string): Promise<boolean> =>
 };
 
 
-export const verifyEmailToken = async (email: string, token: string) => {
-    try {
-        const user = await getUserByEmail(email);
-        if (!user) {
-            throw new Error('User not found');
-        }
 
-        const hashedToken = crypto
-            .createHash('sha256')
-            .update(token)  
-            .digest('hex'); 
-
-        if (user.emailToken === hashedToken) {
-            return true; 
-        } else {
-            return false;
-        }
-    } catch (err: any) {
-        console.error(err);
-        return false;
-    }
-};
