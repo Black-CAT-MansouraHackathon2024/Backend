@@ -26,18 +26,18 @@ export const createUser = async (userDetails: userType) => {
             profilePic: userDetails.profilePic || '',
             bio: userDetails.bio || '',
             skills: userDetails.skills || [],
-            isEmailVerified: false,
-            refreshToken: ''
+            refreshToken: '',
+            emailOtp: '',
+            emailOtpExpiry: new Date(),
         });
         const newUser = await user.save();
         const userId: string = (newUser._id as string).toString();
         const refreshToken = generateRefreshToken(userId);
         const emailToken = generateEmailToken(userDetails.email);
-        newUser.emailToken = emailToken;
         newUser.refreshToken = refreshToken;
         await newUser.save();
 
-        const verificationLink = `${process.env.BASE_URL}/confirm_email?email=${newUser.email}&token=${emailToken}`;
+        const verificationLink = `${process.env.BASE_URL}/api/users/confirm-email?token=${emailToken}`;
         const emailText = `Click on the link to verify your email: ${verificationLink}`;
         await sendEmail(newUser.email, 'Email Verification', emailText);
 
@@ -154,4 +154,13 @@ export const uploadProfilePic = async (id: string, profilePic: string) => {
         throw new Error(err);
     }
 
+}
+export const getEmail = async (email: string) => {
+    try {
+        const user = await User.findOne({ email });
+        return user;
+    }
+    catch (err: any) {
+        throw new Error(err);
+    }
 }

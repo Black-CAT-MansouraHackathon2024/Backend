@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { 
     createUserController, 
-    confirmEmail, 
     loginController, 
     getUserController, 
     updateUserController, 
@@ -16,7 +15,7 @@ import {
     updatePassword
 } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
-
+import upload from '../utils/multer.utils'
 const  userRouter = Router();
 
 /**
@@ -210,37 +209,6 @@ const  userRouter = Router();
  *         description: User not found – No user exists with the provided email address.
  *       500:
  *         description: Internal Server Error – Unexpected error occurred while processing the request.
- */
-
-
-/**
- * @swagger
- * /api/users/confirm_email:
- *   get:
- *     summary: Confirms a user's email
- *     description: Confirms the user's email by verifying the provided token
- *     tags:
- *       - User
- *     parameters:
- *       - name: email
- *         in: query
- *         required: true
- *         schema:
- *           type: string
- *       - name: token
- *         in: query
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Email confirmed successfully
- *       400:
- *         description: Invalid token
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
  */
 
 /**
@@ -504,7 +472,7 @@ const  userRouter = Router();
 
 /**
  * @swagger
- * /api/users/role:
+ * /api/users/role/:{id}:
  *   post:
  *     summary: Assigns a role to a user
  *     description: Assigns a specific role to a user. The user must be authorized to assign roles to other users.
@@ -550,7 +518,7 @@ const  userRouter = Router();
 
 /**
  * @swagger
- * /api/users/{id}/skills:
+ * /api/users/skills/:{id}:
  *   post:
  *     summary: Adds skills to a user profile
  *     description: Adds a list of skills to the user's profile.
@@ -644,21 +612,20 @@ const  userRouter = Router();
 
 userRouter .post('/register', createUserController);
 userRouter .post('/login', loginController);
-userRouter .post('/logout', logoutController);
+userRouter .post('/logout',authMiddleware, logoutController);
 userRouter .post('/refresh_token', refreshTokenController);
-userRouter .get('/confirm_email/:token', confirmEmail);
 
 userRouter .post('/forgot_password', forgotPasswordController);
 userRouter .post('/update_password', updatePassword);
 
 userRouter .get('/profile', authMiddleware, getUserProfileController);
 userRouter .put('/profile', authMiddleware, updateUserProfileController);
-userRouter .put('/profile/upload', authMiddleware, uploadProfilePic);
+userRouter .put('/profile/upload', upload.single('profilePic') ,authMiddleware ,uploadProfilePic);
 
 userRouter .get('/:id', authMiddleware, getUserController);
 userRouter .put('/:id', authMiddleware, updateUserController);
 
-userRouter .post('/role', authMiddleware, addRole);
-userRouter .post('/skills', authMiddleware, addSkills);
+userRouter .post('/role/:id', authMiddleware, addRole);
+userRouter .post('/skills/:id', authMiddleware, addSkills);
 
 export default userRouter ;

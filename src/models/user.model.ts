@@ -11,9 +11,7 @@ export interface IUser extends mongoose.Document {
     profilePic: string;
     bio: string;
     skills: string[];
-    isEmailVerified: boolean;
     refreshToken: string;
-    emailToken?: string;
     emailOtp?: string;
     emailOtpExpiry?: Date;
 }
@@ -29,9 +27,7 @@ const userSchema = new mongoose.Schema({
     profilePic: { type: String, default: '' },
     bio: { type: String, default: '' },
     skills: { type: [String], default: [] },
-    isEmailVerified: { type: Boolean, default: false },
     refreshToken: { type: String, default: '' },
-    emailToken: { type: String },
     emailOtp: { type: String },
     emailOtpExpiry: { type: Date },
 }, { timestamps: true });

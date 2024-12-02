@@ -3,25 +3,23 @@ import { verifyToken } from '../utils/jwt.utils';
 import { getUser } from '../services/user.services';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const authorization = req.headers.authorization?.split(' ');
-        if (!authorization || authorization[0] !== 'Bearer' || !
-            authorization[1]) {
-            throw new Error('UNAUTHORIZED');
+    try{
+        const token= req.headers.authorization?.split(' ')[1];
+        if(!token){
+            throw new Error('Unauthorized');
         }
-        const token = authorization[1];
-        const decoded = verifyToken(token);
-        let user;
-        if (typeof decoded !== 'string' && 'id' in decoded) {
-            user = await getUser(decoded.id);
-        } else {
-          throw new Error('UNAUTHORIZED');
+        const decoded = verifyToken(token) as {
+            [x: string]: any; user: any;
+        };
+        console.log("ll",decoded);
+        const userRecord = await getUser(decoded.user.id as string);
+        if(!userRecord){
+            throw new Error('Unauthorized');
         }
-         
-        req.body.user = user;
+        req.body.user = userRecord;
         next();
     }
-    catch (error:any) {
-       next(error);
+    catch(err){
+        next(err);
     }
 };

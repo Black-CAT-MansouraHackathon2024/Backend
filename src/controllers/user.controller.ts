@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
-import { createUser, getUserByEmail, getUser, updateUser } from '../services/user.services';
+import { createUser, getUserByEmail, getUser, updateUser, getEmail } from '../services/user.services';
 import { IUser } from '../models/user.model';
 import bcrypt from 'bcrypt';
 import { generateEmailToken, verifyEmailToken, sendEmail, generateOtp, verifyOtp } from '../utils/email.utils';
 import { createUserSchema } from '../schemas/user.schema';
 import { generateToken, generateRefreshToken, verifyToken } from '../utils/jwt.utils';
-import cloudnary from '../utils/multer.utils';
+import cloudnary from '../middlewares/cloud.middleware';
 import { custom } from 'zod';
+import upload  from '../utils/multer.utils'
 
 
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
@@ -18,35 +19,13 @@ export const createUserController = async (req: Request, res: Response, next: Ne
             role: req.body.role || 'innovator',
             bio: req.body.bio || '',
             profilePic: req.body.profilePicture || '',
-            isEmailVerified: false,
             refreshToken: '',
             skills: req.body.skills || [],
+            emailotp: '',
+            emailOtpExpiry: new Date(),
         };
         const result = await createUser(user);
         res.status(201).json(result);
-    } catch (err: any) {
-        next(err);
-    }
-};
-
-export const confirmEmail = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const email = req.query.email as string;
-        const token = req.query.token as string;
-        const user = await getUserByEmail(email);
-        if (user) {
-            const isValid = verifyEmailToken(email, token);
-            if (await isValid) {
-                user.isEmailVerified = true;
-                user.emailToken = '';
-                await user.save();
-                res.status(200).json({ message: 'Email verified successfully' });
-            } else {
-                throw new Error('Invalid token');
-            }
-        } else {
-            throw new Error('User not found');
-        }
     } catch (err: any) {
         next(err);
     }
@@ -82,7 +61,9 @@ export const getUserController = async (req: Request, res: Response, next: NextF
     try {
         const authUser = req.body.user;
         const userId = req.params.id;
-        if (authUser._id !== userId) {
+        console.log(authUser);
+        console.log(userId);
+        if (authUser._id.toString() !== userId) {
             next(new Error('Unauthorized'));
         }
         const user = await getUser(userId);
@@ -97,7 +78,7 @@ export const updateUserController = async (req: Request, res: Response, next: Ne
     try {
         const userId = req.params.id;
         const authUser = req.body.user;
-        if (authUser._id !== userId) {
+        if (authUser._id.toString() !== userId) {
             next(new Error('Unauthorized'));
         }
         const userDetails = req.body;
@@ -147,36 +128,37 @@ export const logoutController = async (req: Request, res: Response, next: NextFu
 };
 
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const refreshToken = req.body.refreshToken;
-        const userId = verifyToken(refreshToken);
-        if (typeof userId !== 'string') {
-            throw new Error('Invalid token');
-        }
+   try{
+     const refreshToken = req.body.refreshToken;
+        const decoded = verifyToken(refreshToken) as {
+            user: any; iat: number; exp: number;
+};
+        console.log(decoded);
+        console.log(refreshToken);
+        const userId = decoded.user.id;
         const user = await getUser(userId);
-        if (user && user.refreshToken === refreshToken) {
+        if (user?.refreshToken === refreshToken) {
             const token = generateToken(userId);
-            const refreshToken = generateRefreshToken(userId);
-            user.refreshToken = refreshToken;
-            await user.save();
             res.status(200).json({ token });
         } else {
-            throw new Error('Invalid token');
+            throw new Error('Invalid refresh token');
         }
-    } catch (err: any) {
-        next(err);
-    }
+   }
+   catch(err: any){
+    next(err);
+   }
 };
 
 export const uploadProfilePic = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.body.user._id;
+        console.log("uu",userId);
         const user = await getUser(userId);
         if (user) {
             if (!req.file) {
                 throw new Error('File not provided');
             }
-            const result = await cloudnary.uploader.upload(req.file.path);
+            const result = await cloudnary.uploader.upload(req.file.path)
             user.profilePic = result.secure_url;
             await user.save();
             res.status(200).json({ profilePic: user.profilePic });
@@ -214,7 +196,9 @@ export const addRole = async (req: Request, res: Response, next: NextFunction) =
     try {
         const userId = req.params.id;
         const authUser = req.body.user;
-        if (authUser._id !== userId) {
+        console.log(authUser);
+        console.log(userId);
+        if (authUser._id.toString() !== userId.toString()) {
             next(new Error('Unauthorized'));
         }
         const role = req.body.role;
@@ -236,7 +220,7 @@ export const addSkills = async (req: Request, res: Response, next: NextFunction)
     try {
         const userId = req.params.id;
         const authUser = req.body.user;
-        if (authUser._id !== userId) {
+        if (authUser._id.toString() !== userId.toString()) {
             next(new Error('Unauthorized'));
         }
         const skills = req.body.skills;

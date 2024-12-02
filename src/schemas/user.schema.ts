@@ -10,9 +10,7 @@ export const createUserSchema = z.object({
     profilePic: z.string().default(''),
     bio: z.string().default(''),
     skills: z.array(z.string()).default([]),
-    isEmailVerified: z.boolean().default(false),
     refreshToken: z.string().default(''),
-    emailToken: z.string().optional(),
     emailOtp: z.string().optional(),
     emailOtpExpiry: z.date().optional(),
 });
