@@ -17,7 +17,6 @@ import {
 import { authMiddleware } from '../middlewares/auth.middleware';
 import upload from '../utils/multer.utils'
 const  userRouter = Router();
-
 /**
  * @swagger
  * /api/users/register:
@@ -56,9 +55,9 @@ const  userRouter = Router();
  *                 message:
  *                   type: string
  *                   example: "User registered successfully"
- *                 userId:
- *                  type: string
- *                 example: "61b0f5c7f7e2d3f6f8a242"
+ *                 user:
+ *                   type: string
+ *                   example: "61b0f5c7f7e2d3f6f8a242"
  *       400:
  *         description: Bad request (e.g., invalid input or missing required fields)
  *         content:

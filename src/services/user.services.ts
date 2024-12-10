@@ -37,10 +37,6 @@ export const createUser = async (userDetails: userType) => {
         newUser.refreshToken = refreshToken;
         await newUser.save();
 
-        const verificationLink = `${process.env.BASE_URL}/api/users/confirm-email?token=${emailToken}`;
-        const emailText = `Click on the link to verify your email: ${verificationLink}`;
-        await sendEmail(newUser.email, 'Email Verification', emailText);
-
         const token = generateToken(userId);
         return { token, refreshToken ,user: newUser._id }; 
     }
